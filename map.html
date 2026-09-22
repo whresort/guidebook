@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>室內地圖定位</title>
     <style>
+        body{
+            font-family:-apple-system,"Segoe UI",Roboto,"PingFang TC","Microsoft JhengHei",sans-serif;
+            margin:0; padding:16px; background:#f4f5f7;
+        }
+        h2{font-size:18px; margin:0 0 12px}
         .map-container {
             position: relative;
             display: inline-block;
@@ -14,6 +19,7 @@
             width: 100%;
             height: auto;
             display: block;
+            user-select:none;
         }
         /* 定位標記（紅點）樣式 */
         .marker {
@@ -25,33 +31,53 @@
             border-radius: 50%;
             transform: translate(-50%, -50%);
             display: none; /* 預設隱藏，直到讀到參數 */
+            box-shadow:0 0 0 4px rgba(255,0,0,0.25);
+        }
+        .marker-label{
+            position:absolute;
+            transform:translate(-50%, -130%);
+            background:#222; color:#fff; font-size:13px;
+            padding:3px 8px; border-radius:6px; white-space:nowrap;
+            display:none;
+        }
+        #status{font-size:14px; color:#333}
+        /* 校準模式（加上 ?calib=1 才會出現）用的提示點 */
+        .calib-hint{
+            position:fixed; bottom:12px; left:12px; right:12px;
+            background:#111; color:#0f0; font-size:12px; padding:8px 10px;
+            border-radius:6px; font-family:monospace; max-height:120px; overflow:auto;
         }
     </style>
 </head>
 <body>
 
     <h2>您的目前位置</h2>
-    <div class="map-container">
+    <div class="map-container" id="mapContainer">
         <!-- 替換成你的地圖圖片路徑 -->
-        <img src="3f.png" alt="室內地圖">
+        <img src="3f.png" alt="室內地圖" id="mapImg">
         <div id="marker" class="marker"></div>
+        <div id="markerLabel" class="marker-label"></div>
     </div>
 
     <p id="status">正在讀取位置...</p>
 
     <script>
         // 定義每個錨點在圖片上的百分比座標 (X%, Y%)
+        // ↓↓↓ 這是依你上傳的 3F 地圖初步估算的位置，建議用下方「校準模式」微調 ↓↓↓
         const pointsCoord = {
-            "roomA": { x: 20, y: 30 },
-            "roomB": { x: 60, y: 40 },
-            "lobby": { x: 50, y: 80 }
+            "room316-319": { x: 26.1, y: 31.5, label: "Room 316-319" },
+            "conference":  { x: 34.9, y: 44.1, label: "商務會議室 Conference Room" },
+            "room301-315": { x: 25.6, y: 62.0, label: "Room 301-315" },
+            "toilet":      { x: 45.3, y: 21.0, label: "洗手間 Toilet" },
+            "lobby":       { x: 79.2, y: 80.0, label: "大廳 Lobby" }
         };
 
-        // 取得網址中的參數
+        // 取得網址中的參數，例如 map.html?point=lobby
         const urlParams = new URLSearchParams(window.location.search);
         const pointKey = urlParams.get('point');
 
         const marker = document.getElementById('marker');
+        const markerLabel = document.getElementById('markerLabel');
         const statusText = document.getElementById('status');
 
         if (pointKey && pointsCoord[pointKey]) {
@@ -60,9 +86,45 @@
             marker.style.left = coord.x + '%';
             marker.style.top = coord.y + '%';
             marker.style.display = 'block';
-            statusText.textContent = `目前位置：${pointKey}`;
-        } else {
+
+            markerLabel.style.left = coord.x + '%';
+            markerLabel.style.top = coord.y + '%';
+            markerLabel.textContent = coord.label || pointKey;
+            markerLabel.style.display = 'block';
+
+            statusText.textContent = `目前位置：${coord.label || pointKey}`;
+        } else if (pointKey) {
             statusText.textContent = '無法辨識位置，請重新掃描 QR Code。';
+        } else {
+            statusText.textContent = '請掃描定位點旁的 QR Code。';
+        }
+
+        // ---------------------------------------------------------
+        // 校準模式：網址加上 ?calib=1，點地圖即可取得精準的 x%,y%
+        // 例如：map.html?calib=1
+        // 用法：點地圖上想要的位置 → 畫面下方會顯示座標，複製貼到上面的 pointsCoord。
+        // ---------------------------------------------------------
+        if (urlParams.get('calib') === '1') {
+            const mapImg = document.getElementById('mapImg');
+            const hint = document.createElement('div');
+            hint.className = 'calib-hint';
+            hint.textContent = '校準模式：點擊地圖取得座標...';
+            document.body.appendChild(hint);
+            let log = [];
+
+            document.getElementById('mapContainer').addEventListener('click', (e)=>{
+                const rect = mapImg.getBoundingClientRect();
+                const x = Math.round(((e.clientX - rect.left) / rect.width) * 1000) / 10;
+                const y = Math.round(((e.clientY - rect.top) / rect.height) * 1000) / 10;
+                log.unshift(`{ x: ${x}, y: ${y}, label: "" }`);
+                hint.textContent = log.slice(0,8).join('\n');
+
+                // 也在地圖上暫時顯示這個點方便對照
+                const dot = document.createElement('div');
+                dot.style.cssText = `position:absolute; left:${x}%; top:${y}%; width:10px; height:10px;
+                    margin-left:-5px; margin-top:-5px; background:#00c; border-radius:50%; border:1px solid #fff;`;
+                document.getElementById('mapContainer').appendChild(dot);
+            });
         }
     </script>
 
