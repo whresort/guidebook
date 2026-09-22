@@ -1,88 +1,5 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>室內地圖定位</title>
-    <style>
-        html, body{ height:100%; }
-        body{
-            font-family:-apple-system,"Segoe UI",Roboto,"PingFang TC","Microsoft JhengHei",sans-serif;
-            margin:0; padding:12px; background:#f4f5f7;
-            box-sizing:border-box;
-            display:flex; flex-direction:column;
-            padding-top:calc(12px + env(safe-area-inset-top, 0px));
-            padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));
-        }
-        h2{font-size:16px; margin:0 0 10px; flex:0 0 auto}
-        /* 外層負責左右滑動（圖片依高度縮放後，寬度可能超出螢幕） */
-        .scroll-wrap{
-            flex:1 1 auto;
-            min-height:0;
-            overflow-x:auto;
-            overflow-y:hidden;
-            -webkit-overflow-scrolling:touch;
-            background:#000;
-            border-radius:8px;
-            display:flex;
-            align-items:center;
-        }
-        .map-container {
-            position: relative;
-            display: inline-block;
-            height: 100%;
-        }
-        .map-container img {
-            height: 100%;
-            width: auto;
-            display: block;
-            user-select:none;
-        }
-        /* 定位標記（紅點）樣式 */
-        .marker {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background-color: red;
-            border: 2px solid white;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            display: none; /* 預設隱藏，直到讀到參數 */
-            box-shadow:0 0 0 4px rgba(255,0,0,0.25);
-        }
-        .marker-label{
-            position:absolute;
-            transform:translate(-50%, -130%);
-            background:#222; color:#fff; font-size:13px;
-            padding:3px 8px; border-radius:6px; white-space:nowrap;
-            display:none;
-        }
-        #status{font-size:14px; color:#333}
-        /* 校準模式（加上 ?calib=1 才會出現）用的提示點 */
-        .calib-hint{
-            position:fixed; bottom:12px; left:12px; right:12px;
-            background:#111; color:#0f0; font-size:12px; padding:8px 10px;
-            border-radius:6px; font-family:monospace; max-height:120px; overflow:auto;
-        }
-    </style>
-</head>
-<body>
-
-    <h2>您的目前位置</h2>
-    <div class="scroll-wrap">
-        <div class="map-container" id="mapContainer">
-            <!-- 替換成你的地圖圖片路徑 -->
-            <img src="3f.png" alt="室內地圖" id="mapImg">
-            <div id="marker" class="marker"></div>
-            <div id="markerLabel" class="marker-label"></div>
-        </div>
-    </div>
-
-    <p id="status" style="flex:0 0 auto; margin:10px 0 0">正在讀取位置...</p>
-
     <script>
         // 定義每個錨點在圖片上的百分比座標 (X%, Y%)
-        // ↓↓↓ 這是依你上傳的 3F 地圖初步估算的位置，建議用下方「校準模式」微調 ↓↓↓
         const pointsCoord = {
             "room316-319": { x: 26.1, y: 31.5, label: "Room 316-319" },
             "conference":  { x: 34.9, y: 44.1, label: "商務會議室 Conference Room" },
@@ -91,13 +8,14 @@
             "lobby":       { x: 79.2, y: 80.0, label: "大廳 Lobby" }
         };
 
-        // 取得網址中的參數，例如 map.html?point=lobby
         const urlParams = new URLSearchParams(window.location.search);
         const pointKey = urlParams.get('point');
 
         const marker = document.getElementById('marker');
         const markerLabel = document.getElementById('markerLabel');
         const statusText = document.getElementById('status');
+        const scrollWrap = document.querySelector('.scroll-wrap');
+        const mapImg = document.getElementById('mapImg');
 
         if (pointKey && pointsCoord[pointKey]) {
             const coord = pointsCoord[pointKey];
@@ -112,6 +30,18 @@
             markerLabel.style.display = 'block';
 
             statusText.textContent = `目前位置：${coord.label || pointKey}`;
+
+            // --- 讓畫面載入時自動以紅點為中心水平置中 ---
+            // 需等待圖片載入完成以確保寬度計算正確
+            window.addEventListener('load', () => {
+                const mapWidth = mapImg.offsetWidth; // 圖片渲染後的實際寬度
+                const wrapWidth = scrollWrap.clientWidth; // 捲動容器的寬度
+                
+                // 計算紅點在圖片上的實際像素 X 座標，並扣掉畫面寬度的一半以達到置中
+                const targetX = (coord.x / 100) * mapWidth;
+                scrollWrap.scrollLeft = targetX - (wrapWidth / 2);
+            });
+
         } else if (pointKey) {
             statusText.textContent = '無法辨識位置，請重新掃描 QR Code。';
         } else {
@@ -120,11 +50,8 @@
 
         // ---------------------------------------------------------
         // 校準模式：網址加上 ?calib=1，點地圖即可取得精準的 x%,y%
-        // 例如：map.html?calib=1
-        // 用法：點地圖上想要的位置 → 畫面下方會顯示座標，複製貼到上面的 pointsCoord。
         // ---------------------------------------------------------
         if (urlParams.get('calib') === '1') {
-            const mapImg = document.getElementById('mapImg');
             const hint = document.createElement('div');
             hint.className = 'calib-hint';
             hint.textContent = '校準模式：點擊地圖取得座標...';
@@ -138,7 +65,6 @@
                 log.unshift(`{ x: ${x}, y: ${y}, label: "" }`);
                 hint.textContent = log.slice(0,8).join('\n');
 
-                // 也在地圖上暫時顯示這個點方便對照
                 const dot = document.createElement('div');
                 dot.style.cssText = `position:absolute; left:${x}%; top:${y}%; width:10px; height:10px;
                     margin-left:-5px; margin-top:-5px; background:#00c; border-radius:50%; border:1px solid #fff;`;
@@ -146,6 +72,3 @@
             });
         }
     </script>
-
-</body>
-</html>
