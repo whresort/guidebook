@@ -1,4 +1,86 @@
-    <script>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>室內地圖定位</title>
+    <style>
+        html, body{ height:100%; }
+        body{
+            font-family:-apple-system,"Segoe UI",Roboto,"PingFang TC","Microsoft JhengHei",sans-serif;
+            margin:0; padding:12px; background:#f4f5f7;
+            box-sizing:border-box;
+            display:flex; flex-direction:column;
+            padding-top:calc(12px + env(safe-area-inset-top, 0px));
+            padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+        }
+        h2{font-size:16px; margin:0 0 10px; flex:0 0 auto}
+        /* 外層負責左右滑動（圖片依高度縮放後，寬度可能超出螢幕） */
+        .scroll-wrap{
+            flex:1 1 auto;
+            min-height:0;
+            overflow-x:auto;
+            overflow-y:hidden;
+            -webkit-overflow-scrolling:touch;
+            background:#000;
+            border-radius:8px;
+            display:flex;
+            align-items:center;
+        }
+        .map-container {
+            position: relative;
+            display: inline-block;
+            height: 100%;
+        }
+        .map-container img {
+            height: 100%;
+            width: auto;
+            display: block;
+            user-select:none;
+        }
+        /* 定位標記（紅點）樣式 */
+        .marker {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            display: none; /* 預設隱藏，直到讀到參數 */
+            box-shadow:0 0 0 4px rgba(255,0,0,0.25);
+        }
+        .marker-label{
+            position:absolute;
+            transform:translate(-50%, -130%);
+            background:#222; color:#fff; font-size:13px;
+            padding:3px 8px; border-radius:6px; white-space:nowrap;
+            display:none;
+        }
+        #status{font-size:14px; color:#333}
+        /* 校準模式（加上 ?calib=1 才會出現）用的提示點 */
+        .calib-hint{
+            position:fixed; bottom:12px; left:12px; right:12px;
+            background:#111; color:#0f0; font-size:12px; padding:8px 10px;
+            border-radius:6px; font-family:monospace; max-height:120px; overflow:auto;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>您的目前位置</h2>
+    <div class="scroll-wrap">
+        <div class="map-container" id="mapContainer">
+            <!-- 替換成你的地圖圖片路徑 -->
+            <img src="3f.png" alt="室內地圖" id="mapImg">
+            <div id="marker" class="marker"></div>
+            <div id="markerLabel" class="marker-label"></div>
+        </div>
+    </div>
+
+    <p id="status" style="flex:0 0 auto; margin:10px 0 0">正在讀取位置...</p>
+
+<script>
         // 定義每個錨點在圖片上的百分比座標 (X%, Y%)
         const pointsCoord = {
             "room316-319": { x: 26.1, y: 31.5, label: "Room 316-319" },
@@ -72,3 +154,6 @@
             });
         }
     </script>
+
+</body>
+</html>
