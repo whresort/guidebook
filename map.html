@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>室內地圖定位</title>
+    <style>
+        .map-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+        .map-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        /* 定位標記（紅點）樣式 */
+        .marker {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            display: none; /* 預設隱藏，直到讀到參數 */
+        }
+    </style>
+</head>
+<body>
+
+    <h2>您的目前位置</h2>
+    <div class="map-container">
+        <!-- 替換成你的地圖圖片路徑 -->
+        <img src="your-indoor-map.png" alt="室內地圖">
+        <div id="marker" class="marker"></div>
+    </div>
+
+    <p id="status">正在讀取位置...</p>
+
+    <script>
+        // 定義每個錨點在圖片上的百分比座標 (X%, Y%)
+        const pointsCoord = {
+            "roomA": { x: 20, y: 30 },
+            "roomB": { x: 60, y: 40 },
+            "lobby": { x: 50, y: 80 }
+        };
+
+        // 取得網址中的參數
+        const urlParams = new URLSearchParams(window.location.search);
+        const pointKey = urlParams.get('point');
+
+        const marker = document.getElementById('marker');
+        const statusText = document.getElementById('status');
+
+        if (pointKey && pointsCoord[pointKey]) {
+            const coord = pointsCoord[pointKey];
+            // 設定標記位置
+            marker.style.left = coord.x + '%';
+            marker.style.top = coord.y + '%';
+            marker.style.display = 'block';
+            statusText.textContent = `目前位置：${pointKey}`;
+        } else {
+            statusText.textContent = '無法辨識位置，請重新掃描 QR Code。';
+        }
+    </script>
+
+</body>
+</html>
