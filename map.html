@@ -2,22 +2,39 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>室內地圖定位</title>
     <style>
+        html, body{ height:100%; }
         body{
             font-family:-apple-system,"Segoe UI",Roboto,"PingFang TC","Microsoft JhengHei",sans-serif;
-            margin:0; padding:16px; background:#f4f5f7;
+            margin:0; padding:12px; background:#f4f5f7;
+            box-sizing:border-box;
+            display:flex; flex-direction:column;
+            padding-top:calc(12px + env(safe-area-inset-top, 0px));
+            padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));
         }
-        h2{font-size:18px; margin:0 0 12px}
+        h2{font-size:16px; margin:0 0 10px; flex:0 0 auto}
+        /* 外層負責左右滑動（圖片依高度縮放後，寬度可能超出螢幕） */
+        .scroll-wrap{
+            flex:1 1 auto;
+            min-height:0;
+            overflow-x:auto;
+            overflow-y:hidden;
+            -webkit-overflow-scrolling:touch;
+            background:#000;
+            border-radius:8px;
+            display:flex;
+            align-items:center;
+        }
         .map-container {
             position: relative;
             display: inline-block;
-            max-width: 100%;
+            height: 100%;
         }
         .map-container img {
-            width: 100%;
-            height: auto;
+            height: 100%;
+            width: auto;
             display: block;
             user-select:none;
         }
@@ -52,14 +69,16 @@
 <body>
 
     <h2>您的目前位置</h2>
-    <div class="map-container" id="mapContainer">
-        <!-- 替換成你的地圖圖片路徑 -->
-        <img src="3f.png" alt="室內地圖" id="mapImg">
-        <div id="marker" class="marker"></div>
-        <div id="markerLabel" class="marker-label"></div>
+    <div class="scroll-wrap">
+        <div class="map-container" id="mapContainer">
+            <!-- 替換成你的地圖圖片路徑 -->
+            <img src="3f.png" alt="室內地圖" id="mapImg">
+            <div id="marker" class="marker"></div>
+            <div id="markerLabel" class="marker-label"></div>
+        </div>
     </div>
 
-    <p id="status">正在讀取位置...</p>
+    <p id="status" style="flex:0 0 auto; margin:10px 0 0">正在讀取位置...</p>
 
     <script>
         // 定義每個錨點在圖片上的百分比座標 (X%, Y%)
