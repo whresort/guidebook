@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>室內地圖定位</title>
+    <style>
+        html, body{ height:100%; }
+        body{
+            font-family:-apple-system,"Segoe UI",Roboto,"PingFang TC","Microsoft JhengHei",sans-serif;
+            margin:0; padding:12px; background:#f4f5f7;
+            box-sizing:border-box;
+            display:flex; flex-direction:column;
+            padding-top:calc(12px + env(safe-area-inset-top, 0px));
+            padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+        }
+        .site-nav {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; column-gap: 16px;
+            padding: 8px 8px 14px; border-bottom: 2px solid #111;
+            margin: 0 0 12px; background:#fff; flex:0 0 auto;
+        }
+        .site-nav a {
+            text-align: center; text-decoration: none; color: #111;
+            font-size: clamp(20px, 3.6vw, 32px); letter-spacing: 0.16em; line-height: 1.35;
+        }
+        .site-nav a.is-current { color: #c8c8c8; }
+        h2{font-size:36px; margin:0 0 10px; flex:0 0 auto}
+        .scroll-wrap{
+            flex:1 1 auto; min-height:0;
+            overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch;
+            background:#000; border-radius:8px; display:flex; align-items:center;
+        }
+        .map-container { position: relative; display: inline-block; height: 100%; --u: 1px; }
+        .map-container img { height: 100%; width: auto; display: block; user-select:none; }
+        .marker {
+            position: absolute; width: 20px; height: 20px; background-color: red;
+            border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%);
+            display: none; box-shadow:0 0 0 4px rgba(255,0,0,0.25);
+        }
+        .marker-label{
+            position:absolute; transform:translate(-50%, -130%);
+            background:#222; color:#fff; font-size:13px;
+            padding:3px 8px; border-radius:6px; white-space:nowrap; display:none;
+        }
+        #status{font-size:14px; color:#333}
+        .calib-hint{
+            position:fixed; bottom:12px; left:12px; right:12px;
+            background:#111; color:#0f0; font-size:12px; padding:8px 10px;
+            border-radius:6px; font-family:monospace; max-height:120px; overflow:auto;
+        }
+        .back-to-top {
+            position: fixed; right: 20px; bottom: 20px; z-index: 50;
+            padding: 10px 14px; border: 1px solid #111; background: #fff; color: #111;
+            font: inherit; font-size: 13px; letter-spacing: 0.04em; cursor: pointer; text-decoration: none;
+        }
+        .back-to-top:hover { background: #111; color: #fff; }
+        #google_translate_element{ position: fixed; right: 20px; bottom: 68px; z-index: 51; }
+
+        /* ===== 圖面文字標示 =====
+           位置以圖片寬高的百分比定位，字級以 --u（= 圖片高度 / 1080）縮放，
+           所以圖片縮放時文字會跟著等比例移動。 */
+        .labels[hidden]{ display:none; }
+        .lb, .blk{
+            position:absolute;
+            font-family:"Noto Serif TC","Songti TC","PMingLiU","MingLiU","Times New Roman",serif;
+            color:#222; pointer-events:none;
+        }
+        .lb{
+            transform:translate(-50%,-50%);
+            font-size:calc(19 * var(--u));
+            line-height:1.25; white-space:nowrap; text-align:center;
+        }
+        .lb.r{ transform:translate(-100%,-50%); text-align:right; }
+        .lb.r2{ text-align:center; font-size:calc(17 * var(--u)); }
+        .lb.big{ font-size:calc(31 * var(--u)); line-height:1.3; }
+        .blk h3{ margin:0 0 calc(8 * var(--u)); font-size:calc(31 * var(--u)); font-weight:500; line-height:1.2; }
+        .blk p{ margin:0; font-size:calc(17 * var(--u)); line-height:1.35; text-align:left; }
+
+        .map-legend{
+            position:absolute; left:4.8%; top:72%; margin:0;
+            font-family:"Noto Serif TC","Songti TC","PMingLiU","MingLiU","Times New Roman",serif;
+            font-size:24px; line-height:2.3; color:#111; letter-spacing:0.02em;
+            white-space:nowrap; pointer-events:none;
+        }
+        .map-legend a{ display:block; width:fit-content; color:inherit; text-decoration:none; cursor:pointer; pointer-events:auto; }
+        .map-legend a.is-active{ font-weight:700; text-decoration:underline; text-underline-offset:0.25em; }
+    </style>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'zh-TW',
+                includedLanguages: 'en,ja,ko,zh-CN,tl,id,vi,es,ar,de,fr',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+            }, 'google_translate_element');
+        }
+    </script>
+</head>
+<body>
+<div id="google_translate_element"></div>
+    <nav class="site-nav" aria-label="頁面">
+        <a href="index.html">設備說明</a>
+        <a class="is-current" href="map.html" aria-current="page">場域地圖</a>
+        <a href="around.html">周邊環境</a>
+    </nav>
+
+    <h2 id="floorTitle">3F</h2>
+    <div class="scroll-wrap">
+        <div class="map-container" id="mapContainer">
+            <img src="3f.png" alt="室內地圖" id="mapImg">
+
+        <!-- 各樓層圖面文字（座標為圖片寬高的 %） -->
+        <div class="labels" data-floor="1f" hidden>
+            <span class="lb" style="left:43.44%;top:11.67%">歡唱KTV室</span>
+            <span class="lb" style="left:48.39%;top:22.50%">AED</span>
+            <span class="lb" style="left:72.45%;top:19.07%">出口</span>
+            <span class="lb" style="left:60.73%;top:21.30%">溫泉SPA池</span>
+            <span class="lb" style="left:61.15%;top:43.24%">溫泉SPA池</span>
+            <span class="lb" style="left:77.97%;top:20.00%">男更衣室</span>
+            <span class="lb" style="left:76.98%;top:26.57%">蒸氣</span>
+            <span class="lb" style="left:76.98%;top:30.74%">烤箱</span>
+            <span class="lb" style="left:76.98%;top:34.91%">蒸氣</span>
+            <span class="lb" style="left:76.98%;top:38.98%">烤箱</span>
+            <span class="lb" style="left:77.97%;top:45.09%">女更衣室</span>
+            <span class="lb" style="left:73.75%;top:51.02%">飲水機</span>
+            <span class="lb" style="left:21.15%;top:41.94%">海景餐廳</span>
+            <span class="lb" style="left:40.83%;top:45.46%">室內休息區</span>
+            <span class="lb" style="left:41.04%;top:65.46%">室外休息區</span>
+            <span class="lb" style="left:63.02%;top:81.76%">放風戲沙區</span>
+            <div class="blk" style="left:85.16%;top:7.96%;width:13.02%"><h3>溫泉SPA池</h3><p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation</p></div>
+            <div class="blk" style="left:85.16%;top:34.26%;width:13.02%"><h3>室內/室外休息區</h3><p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation</p></div>
+            <div class="blk" style="left:85.16%;top:65.93%;width:13.02%"><h3>歡唱KTV室</h3><p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation</p></div>
+        </div>
+        <div class="labels" data-floor="3f">
+            <span class="lb" style="left:46.88%;top:9.07%">洗手間</span>
+            <span class="lb" style="left:26.25%;top:23.15%">房間 316 - 321</span>
+            <span class="lb" style="left:46.35%;top:27.04%">樓梯/電梯</span>
+            <span class="lb" style="left:26.35%;top:56.20%">房間 301 - 315</span>
+            <span class="lb r2" style="left:71.30%;top:52.96%">下 1F<br>泳池/沙灘/餐廳</span>
+            <span class="lb" style="left:65.94%;top:68.70%">商品區</span>
+            <span class="lb" style="left:87.86%;top:65.74%">櫃檯</span>
+            <span class="lb r2" style="left:88.12%;top:76.57%">上 5F<br>娛樂廳/遊戲室</span>
+            <span class="lb big r" style="left:95.99%;top:48.61%">房間101 - 217<br>停車場<br>烤肉區</span>
+        </div>
+        <div class="labels" data-floor="5f" hidden>
+            <span class="lb" style="left:27.29%;top:23.15%">房間 516 - 521</span>
+            <span class="lb" style="left:46.77%;top:28.70%">樓梯/電梯</span>
+            <span class="lb" style="left:37.29%;top:39.35%">兒童遊戲室</span>
+            <span class="lb" style="left:27.29%;top:57.59%">房間 501 - 515</span>
+            <span class="lb r" style="left:89.64%;top:63.70%">下 3F<br>大廳/櫃檯</span>
+            <span class="lb" style="left:84.64%;top:72.69%">娛樂廳</span>
+            <div class="blk" style="left:58.23%;top:12.59%;width:36.46%"><h3>兒童遊戲室使用需知</h3><p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation</p></div>
+            <div class="blk" style="left:58.23%;top:31.11%;width:36.46%"><h3>娛樂廳使用需知</h3><p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation</p></div>
+        </div>
+
+            <div id="marker" class="marker"></div>
+            <div id="markerLabel" class="marker-label"></div>
+
+            <div class="map-legend" id="mapLegend">
+                <a href="#" data-floor="1f">1F 海景餐廳 / 溫泉SPA區 / 歡唱KTV室</a>
+                <a href="#" data-floor="3f" class="is-active">3F 櫃檯 / 房間 101-321 / 烤肉區 / 停車場</a>
+                <a href="#" data-floor="5f">5F 兒童遊戲室 / 娛樂區 / 房間501-521</a>
+            </div>
+        </div>
+    </div>
+
+    <p id="status" style="flex:0 0 auto; margin:10px 0 0">正在讀取位置...</p>
+    <a class="back-to-top" href="#top">Back to top</a>
+
+<script>
+    document.documentElement.id = "top";
+    document.querySelector(".back-to-top").addEventListener("click", (event) => {
+        event.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        const wrap = document.querySelector(".scroll-wrap");
+        if (wrap) wrap.scrollTo({ left: 0, behavior: "smooth" });
+    });
+
+    const pointsCoord = {
+        "room316-319": { x: 26.1, y: 31.5, label: "Room 316-319" },
+        "conference":  { x: 34.9, y: 44.1, label: "商務會議室 Conference Room" },
+        "room301-315": { x: 25.6, y: 62.0, label: "Room 301-315" },
+        "toilet":      { x: 45.3, y: 21.0, label: "洗手間 Toilet" },
+        "lobby":       { x: 79.2, y: 80.0, label: "大廳 Lobby" }
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const pointKey = urlParams.get('point');
+
+    const marker = document.getElementById('marker');
+    const markerLabel = document.getElementById('markerLabel');
+    const statusText = document.getElementById('status');
+    const scrollWrap = document.querySelector('.scroll-wrap');
+    const mapImg = document.getElementById('mapImg');
+    const mapContainer = document.getElementById('mapContainer');
+
+    // 圖面文字與樓層說明的字級，隨圖片高度縮放
+    function fitLabels(){
+        const h = mapImg.offsetHeight;
+        if (!h) return;
+        mapContainer.style.setProperty('--u', (h / 1080) + 'px');
+        const legend = document.getElementById('mapLegend');
+        if (legend) legend.style.fontSize = (h * 0.028) + 'px';
+    }
+    window.addEventListener('load', fitLabels);
+    window.addEventListener('resize', fitLabels);
+    mapImg.addEventListener('load', fitLabels);
+
+    if (pointKey && pointsCoord[pointKey]) {
+        const coord = pointsCoord[pointKey];
+        marker.style.left = coord.x + '%';
+        marker.style.top = coord.y + '%';
+        marker.style.display = 'block';
+        markerLabel.style.left = coord.x + '%';
+        markerLabel.style.top = coord.y + '%';
+        markerLabel.textContent = coord.label || pointKey;
+        markerLabel.style.display = 'block';
+        statusText.textContent = `目前位置：${coord.label || pointKey}`;
+
+        window.addEventListener('load', () => {
+            const targetX = (coord.x / 100) * mapImg.offsetWidth;
+            scrollWrap.scrollLeft = targetX - (scrollWrap.clientWidth / 2);
+        });
+    } else if (pointKey) {
+        statusText.textContent = '無法辨識位置，請重新掃描 QR Code。';
+    } else {
+        statusText.textContent = '請掃描定位點旁的 QR Code。';
+    }
+
+    // 校準模式：網址加上 ?calib=1，點地圖取得 x%,y%
+    if (urlParams.get('calib') === '1') {
+        const hint = document.createElement('div');
+        hint.className = 'calib-hint';
+        hint.textContent = '校準模式：點擊地圖取得座標...';
+        document.body.appendChild(hint);
+        let log = [];
+        mapContainer.addEventListener('click', (e)=>{
+            const rect = mapImg.getBoundingClientRect();
+            const x = Math.round(((e.clientX - rect.left) / rect.width) * 1000) / 10;
+            const y = Math.round(((e.clientY - rect.top) / rect.height) * 1000) / 10;
+            log.unshift(`{ x: ${x}, y: ${y}, label: "" }`);
+            hint.textContent = log.slice(0,8).join('\n');
+            const dot = document.createElement('div');
+            dot.style.cssText = `position:absolute; left:${x}%; top:${y}%; width:10px; height:10px;
+                margin-left:-5px; margin-top:-5px; background:#00c; border-radius:50%; border:1px solid #fff;`;
+            mapContainer.appendChild(dot);
+        });
+    }
+
+    // 切換樓層：換圖、換標題、換圖面文字、標示目前樓層
+    function setFloor(floor){
+        mapImg.src = floor + '.png';
+        document.getElementById('floorTitle').textContent = floor.toUpperCase();
+
+        document.querySelectorAll('#mapLegend a').forEach(a => {
+            a.classList.toggle('is-active', a.dataset.floor === floor);
+        });
+        document.querySelectorAll('.labels').forEach(g => {
+            g.hidden = (g.dataset.floor !== floor);
+        });
+
+        const showMarker = (floor === '3f' && pointKey && pointsCoord[pointKey]);
+        marker.style.display = showMarker ? 'block' : 'none';
+        markerLabel.style.display = showMarker ? 'block' : 'none';
+
+        scrollWrap.scrollLeft = 0;
+    }
+
+    document.querySelectorAll('#mapLegend a').forEach(a => {
+        a.addEventListener('click', (e) => {
+            e.preventDefault();
+            setFloor(a.dataset.floor);
+        });
+    });
+</script>
+</body>
+</html>
