@@ -3,27 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+     <link rel="stylesheet" href="style.css">
     <title>室內地圖定位</title>
     <style>
-        html, body{ height:100%; }
-        body{
-            font-family:-apple-system,"Segoe UI",Roboto,"PingFang TC","Microsoft JhengHei",sans-serif;
-            margin:0; padding:12px; background:#f4f5f7;
-            box-sizing:border-box;
-            display:flex; flex-direction:column;
-            padding-top:calc(12px + env(safe-area-inset-top, 0px));
-            padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));
-        }
-        .site-nav {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; column-gap: 16px;
-            padding: 8px 8px 14px; border-bottom: 2px solid #111;
-            margin: 0 0 12px; background:#fff; flex:0 0 auto;
-        }
-        .site-nav a {
-            text-align: center; text-decoration: none; color: #111;
-            font-size: clamp(20px, 3.6vw, 32px); letter-spacing: 0.16em; line-height: 1.35;
-        }
-        .site-nav a.is-current { color: #c8c8c8; }
+       
         h2{font-size:36px; margin:0 0 10px; flex:0 0 auto}
         .scroll-wrap{
             flex:1 1 auto; min-height:0;
@@ -74,7 +57,7 @@
         .lb.r2{ text-align:center; font-size:calc(17 * var(--u)); }
         .lb.big{ font-size:calc(31 * var(--u)); line-height:1.3; }
         .blk h3{ margin:0 0 calc(8 * var(--u)); font-size:calc(31 * var(--u)); font-weight:500; line-height:1.2; }
-        .blk p{ margin:0; font-size:calc(17 * var(--u)); line-height:1.35; text-align:left; }
+        .blk p{ margin:0; font-size:calc(17 * var(--u)); line-height:1.35; text-align:left; padding-bottom:3px;}
 
         .map-legend{
             position:absolute; left:4.8%; top:72%; margin:0;
@@ -104,7 +87,7 @@
         <a href="around.html">周邊環境</a>
     </nav>
 
-    <h2 id="floorTitle">3F</h2>
+    <h2 id="floorTitle">3F 櫃檯 / 房間 101-321 / 烤肉區 / 停車場</h2>
     <div class="scroll-wrap">
         <div class="map-container" id="mapContainer">
             <img src="3f.png" alt="室內地圖" id="mapImg">
@@ -127,9 +110,23 @@
             <span class="lb" style="left:40.83%;top:45.46%">室內休息區</span>
             <span class="lb" style="left:41.04%;top:65.46%">室外休息區</span>
             <span class="lb" style="left:63.02%;top:81.76%">放風戲沙區</span>
-            <div class="blk" style="left:85.16%;top:7.96%;width:13.02%"><h3>溫泉SPA池</h3><p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation</p></div>
-            <div class="blk" style="left:85.16%;top:34.26%;width:13.02%"><h3>室內/室外休息區</h3><p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation</p></div>
-            <div class="blk" style="left:85.16%;top:65.93%;width:13.02%"><h3>歡唱KTV室</h3><p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation</p></div>
+            <div class="blk" style="left:84.5%;top:7%;width:13.02%"><h3>溫泉SPA池</h3>
+            <p>游泳者應穿著泳裝及戴妥泳帽，並於入池前先將身體淋浴乾淨始能入池</p>
+            <p>嚴禁在池內吐痰、便溺、拋棄污物或其他不符衛生之行為</p>
+            <p>池邊嚴禁跳水奔跑，池中不得惡作劇，以免發生意外</p>
+            <p>身高未達 120 公分禁止單獨下水，須由家長陪同</p>
+            <p>患有傳染性疾病、心臟病、癲癇症、眼疾、皮膚病、飲酒過量、泥醉或身體不適者不得入池</p>
+            <p>游泳池內嚴禁攜帶任何飲料及各類食物進入</p>
+            <p>飽食後建議至少休息一小時方可入池</p>
+            </div>
+            <div class="blk" style="left:84.5%;top:55%;width:13.02%"><h3>室內/室外休息區</h3><p>桌椅使用完畢請隨手整理乾請，並將垃圾丟棄至垃圾桶</p>
+            <p>請勿在室內休息室唱歌或大聲喧嘩</p></div>
+            <div class="blk" style="left:84.5%;top:75%;width:13.02%"><h3>歡唱KTV室</h3>
+            <p>開放時間 08:00 - 22:00</p>
+            <p>此區域僅限唱歌專用</p>
+            <p>請勿在此飲食或放置私人物品</p>
+            </div>
+              <div class="blk" style="left:56%;top:93%;"><h3>◎桌椅使用完畢請隨手整理乾請，並將垃圾丟棄至垃圾桶◎</h3></div>
         </div>
         <div class="labels" data-floor="3f">
             <span class="lb" style="left:46.88%;top:9.07%">洗手間</span>
@@ -143,14 +140,20 @@
             <span class="lb big r" style="left:95.99%;top:48.61%">房間101 - 217<br>停車場<br>烤肉區</span>
         </div>
         <div class="labels" data-floor="5f" hidden>
-            <span class="lb" style="left:27.29%;top:23.15%">房間 516 - 521</span>
+            <span class="lb" style="left:27.29%;top:24%">房間 516 - 521</span>
             <span class="lb" style="left:46.77%;top:28.70%">樓梯/電梯</span>
             <span class="lb" style="left:37.29%;top:39.35%">兒童遊戲室</span>
             <span class="lb" style="left:27.29%;top:57.59%">房間 501 - 515</span>
             <span class="lb r" style="left:89.64%;top:63.70%">下 3F<br>大廳/櫃檯</span>
             <span class="lb" style="left:84.64%;top:72.69%">娛樂廳</span>
-            <div class="blk" style="left:58.23%;top:12.59%;width:36.46%"><h3>兒童遊戲室使用需知</h3><p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation</p></div>
-            <div class="blk" style="left:58.23%;top:31.11%;width:36.46%"><h3>娛樂廳使用需知</h3><p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation</p></div>
+            <div class="blk" style="left:58.23%;top:10%;width:36.46%"><h3>兒童遊戲室使用需知</h3>
+            <p>借用與進入方式：</p>
+<p>無臨時卡的貴賓，請先至櫃檯借用一張臨時卡。借卡時需支付押金 $200。歸還臨時卡後，即退還押金。</p>
+<p>電源與設備使用：</p>
+<p>進入後請插卡啟動電源。</p>
+<p>冷氣開關標示：開啟為 ON，關閉為 OFF。</p></div>
+            <div class="blk" style="left:58.23%;top:31.11%;width:36.46%"><h3>娛樂廳使用需知</h3><p>遊樂設施/設備回不定式更新/換新</p>
+            <p>請勿惡意破壞</p></div>
         </div>
 
             <div id="marker" class="marker"></div>
@@ -177,11 +180,19 @@
     });
 
     const pointsCoord = {
-        "room316-319": { x: 26.1, y: 31.5, label: "Room 316-319" },
-        "conference":  { x: 34.9, y: 44.1, label: "商務會議室 Conference Room" },
-        "room301-315": { x: 25.6, y: 62.0, label: "Room 301-315" },
-        "toilet":      { x: 45.3, y: 21.0, label: "洗手間 Toilet" },
-        "lobby":       { x: 79.2, y: 80.0, label: "大廳 Lobby" }
+        "stairs":      { floor: "3f", x: 44,    y: 23,    label: "現在位置 You are here" },
+        "lobby":       { floor: "3f", x: 78,    y: 67.0,  label: "現在位置 You are here" },
+        "spa":     { floor: "1f", x: 73.75, y: 51.02, label: "現在位置 You are here" },
+        "ktv":      { floor: "1f", x: 51, y: 26, label: "現在位置 You are here" },
+        "club":      { floor: "5f", x: 91, y: 72.69, label: "現在位置 You are here" },
+        "kids":      { floor: "5f", x: 50, y: 40, label: "現在位置 You are here" }
+    };
+
+    // 各樓層標題文字（切換樓層時與圖例文字保持一致）
+    const floorTitles = {
+        "1f": "1F 海景餐廳 / 溫泉SPA區 / 歡唱KTV室",
+        "3f": "3F 櫃檯 / 房間 101-321 / 烤肉區 / 停車場",
+        "5f": "5F 兒童遊戲室 / 娛樂區 / 房間501-521"
     };
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -208,14 +219,8 @@
 
     if (pointKey && pointsCoord[pointKey]) {
         const coord = pointsCoord[pointKey];
-        marker.style.left = coord.x + '%';
-        marker.style.top = coord.y + '%';
-        marker.style.display = 'block';
-        markerLabel.style.left = coord.x + '%';
-        markerLabel.style.top = coord.y + '%';
-        markerLabel.textContent = coord.label || pointKey;
-        markerLabel.style.display = 'block';
         statusText.textContent = `目前位置：${coord.label || pointKey}`;
+        setFloor(coord.floor);
 
         window.addEventListener('load', () => {
             const targetX = (coord.x / 100) * mapImg.offsetWidth;
@@ -250,7 +255,7 @@
     // 切換樓層：換圖、換標題、換圖面文字、標示目前樓層
     function setFloor(floor){
         mapImg.src = floor + '.png';
-        document.getElementById('floorTitle').textContent = floor.toUpperCase();
+        document.getElementById('floorTitle').textContent = floorTitles[floor] || floor.toUpperCase();
 
         document.querySelectorAll('#mapLegend a').forEach(a => {
             a.classList.toggle('is-active', a.dataset.floor === floor);
@@ -259,7 +264,15 @@
             g.hidden = (g.dataset.floor !== floor);
         });
 
-        const showMarker = (floor === '3f' && pointKey && pointsCoord[pointKey]);
+        const coord = pointKey && pointsCoord[pointKey];
+        const showMarker = !!(coord && coord.floor === floor);
+        if (showMarker) {
+            marker.style.left = coord.x + '%';
+            marker.style.top = coord.y + '%';
+            markerLabel.style.left = coord.x + '%';
+            markerLabel.style.top = coord.y + '%';
+            markerLabel.textContent = coord.label || pointKey;
+        }
         marker.style.display = showMarker ? 'block' : 'none';
         markerLabel.style.display = showMarker ? 'block' : 'none';
 

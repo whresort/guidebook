@@ -3,43 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <title>周邊環境｜白宮行館</title>
     <style>
-        html, body{ height:100%; }
-        body{
-            font-family:-apple-system,"Segoe UI",Roboto,"PingFang TC","Microsoft JhengHei",sans-serif;
-            margin:0; padding:12px; background:#f4f5f7;
-            box-sizing:border-box;
-            display:flex; flex-direction:column;
-            padding-top:calc(12px + env(safe-area-inset-top, 0px));
-            padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));
-        }
-
-
-        .site-nav {
-             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            column-gap: 16px;
-            padding: 8px 8px 14px;
-            border-bottom: 2px solid #111;
-            margin: 0 0 12px;
-            background:#fff;
-            flex:0 0 auto;
-        }
-
-        .site-nav a {
-            text-align: center;
-            text-decoration: none;
-            color: #111;
-            font-size: clamp(20px, 3.6vw, 32px);
-            letter-spacing: 0.16em;
-            line-height: 1.35;
-        }
-
-        .site-nav a.is-current {
-            color: #c8c8c8;
-        }
-
         .lede {
             margin: 0 0 14px;
             font-size: 16px;
@@ -284,6 +250,7 @@
             <li><a href="#remote" data-item="remote">遙控器</a></li>
             <li><a href="#light" data-item="light">電燈開關</a></li>
             <li><a href="#kids" data-item="kids">兒童遊戲室</a></li>
+            <li><a href="#games" data-item="games">娛樂廳</a></li>
             <li><a href="#spa" data-item="spa">美肌SPA區</a></li>
             <li><a href="#sand" data-item="sand">放風戲沙區</a></li>
             <li><a href="#karaoke" data-item="karaoke">歡唱室</a></li>
@@ -342,6 +309,15 @@
         <article class="item" id="kids" hidden>
             <h1 class="item-title">兒童遊戲室</h1>
             <div class="photo"><img src="i2-01.png"></div>
+            <ol class="notes">
+                <li>本館提供兒童遊戲室、球類設施、遊戲機台。開放時間為08:00AM-22:00PM。</li>
+                <li>貼心提醒請注意標語：小心階梯、小心地滑、請勿跳床、請勿踢石桌椅。</li>
+            </ol>
+        </article>
+        
+        <article class="item" id="games" hidden>
+            <h1 class="item-title">娛樂廳</h1>
+            <div class="photo"><img src="i2-06.png"></div>
             <ol class="notes">
                 <li>本館提供兒童遊戲室、球類設施、遊戲機台。開放時間為08:00AM-22:00PM。</li>
                 <li>貼心提醒請注意標語：小心階梯、小心地滑、請勿跳床、請勿踢石桌椅。</li>
